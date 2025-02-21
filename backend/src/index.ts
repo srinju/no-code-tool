@@ -4,8 +4,8 @@ require("dotenv").config();
 import OpenAI from 'openai';
 import { BASE_PROMPT, getSystemPrompt } from './prompts';
 import express from 'express';
-import { basePrompt as basePromptNode } from './defaults/node';
-import { basePrompt as basePromptReact } from './defaults/react';
+import { basePrompt as basePromptNode, nodeUiPrompt } from './defaults/node';
+import { basePrompt as basePromptReact, uiPromtReact } from './defaults/react';
 
 
 const app = express();
@@ -44,14 +44,16 @@ app.post('/template' , async (req , res) => {
 
     if(answer === 'node'){
         res.json({
-            prompts : [basePromptNode ]
+            prompts : [basePromptNode ],
+            uiPrompts : nodeUiPrompt
         });
         return;
     }
 
     if(answer === 'react'){
         res.json({
-            prompts : [BASE_PROMPT , basePromptReact]
+            prompts : [BASE_PROMPT , basePromptReact],
+            uiPrompts : uiPromtReact
         });
         return;
     }

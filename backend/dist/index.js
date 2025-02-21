@@ -51,13 +51,15 @@ app.post('/template', (req, res) => __awaiter(void 0, void 0, void 0, function* 
     console.log("response from the ai is : ", answer);
     if (answer === 'node') {
         res.json({
-            prompts: [node_1.basePrompt]
+            prompts: [node_1.basePrompt],
+            uiPrompts: node_1.nodeUiPrompt
         });
         return;
     }
     if (answer === 'react') {
         res.json({
-            prompts: [prompts_1.BASE_PROMPT, react_1.basePrompt]
+            prompts: [prompts_1.BASE_PROMPT, react_1.basePrompt],
+            uiPrompts: react_1.uiPromtReact
         });
         return;
     }

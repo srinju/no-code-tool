@@ -32,40 +32,48 @@ const openai = new openai_1.default({
 });
 //get the template >>
 app.post('/template', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    //get the prompt>
-    const prompt = req.body.prompt;
-    //let answer = '';
-    const response = yield openai.chat.completions.create({
-        model: "gpt-4o",
-        store: true,
-        //stream : true,
-        messages: [{
-                "role": "system",
-                "content": "Response should be a single word , dont thik that is dont return any <think> tag .Return either node or react based on what do you think this project should be . Only return a single word either 'node' or 'react' . CRITICAL : DO NOT RETURN ANYTHING ELSE"
-            }, {
-                "role": "user",
-                "content": prompt
-            },],
-    });
-    const answer = response.choices[0].message.content; //get only the content
-    console.log("response from the ai is : ", answer);
-    if (answer === 'node') {
-        res.json({
-            prompts: [node_1.basePrompt],
-            uiPrompts: node_1.nodeUiPrompt
+    try {
+        //get the prompt>
+        const prompt = req.body.prompt;
+        //let answer = '';
+        const response = yield openai.chat.completions.create({
+            model: "gpt-4o",
+            store: true,
+            //stream : true,
+            messages: [{
+                    "role": "system",
+                    "content": "Response should be a single word , dont thik that is dont return any <think> tag .Return either node or react based on what do you think this project should be . Only return a single word either 'node' or 'react' . CRITICAL : DO NOT RETURN ANYTHING ELSE"
+                }, {
+                    "role": "user",
+                    "content": prompt
+                },],
         });
-        return;
-    }
-    if (answer === 'react') {
-        res.json({
-            prompts: [prompts_1.BASE_PROMPT, react_1.basePrompt],
-            uiPrompts: react_1.uiPromtReact
+        const answer = response.choices[0].message.content; //get only the content
+        console.log("response from the ai is : ", answer);
+        if (answer === 'node') {
+            res.json({
+                prompts: [node_1.basePrompt],
+                uiPrompts: node_1.nodeUiPrompt
+            });
+            return;
+        }
+        if (answer === 'react') {
+            res.json({
+                prompts: [prompts_1.BASE_PROMPT, react_1.basePrompt],
+                uiPrompts: react_1.uiPromtReact
+            });
+            return;
+        }
+        res.status(400).json({
+            error: "not a framework registered error!!"
         });
-        return;
     }
-    res.status(400).json({
-        error: "not a framework registered error!!"
-    });
+    catch (error) {
+        console.error("there was an error while getting the template from the user's message in the /template endpoint!");
+        res.status(500).json({
+            message: "Internal Server Error in /template"
+        });
+    }
 }));
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -109,6 +117,49 @@ function main() {
     });
 }
 //main();
+app.post('/chat', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, e_2, _b, _c;
+    var _d, _e;
+    try {
+        //when the user instructs the LLM that make a todo node backend then it hits /template then it generates the prompts to send the llm and we make the request with that prompts only
+        const messages = req.body.messages;
+        const response = yield openai.chat.completions.create({
+            model: "gpt-4o",
+            store: true,
+            stream: true,
+            messages: [{
+                    "role": "system",
+                    "content": (0, prompts_1.getSystemPrompt)()
+                }, ...messages]
+        });
+        try {
+            for (var _f = true, response_1 = __asyncValues(response), response_1_1; response_1_1 = yield response_1.next(), _a = response_1_1.done, !_a; _f = true) {
+                _c = response_1_1.value;
+                _f = false;
+                const chunk = _c;
+                process.stdout.write(((_e = (_d = chunk.choices[0]) === null || _d === void 0 ? void 0 : _d.delta) === null || _e === void 0 ? void 0 : _e.content) || "");
+            }
+        }
+        catch (e_2_1) { e_2 = { error: e_2_1 }; }
+        finally {
+            try {
+                if (!_f && !_a && (_b = response_1.return)) yield _b.call(response_1);
+            }
+            finally { if (e_2) throw e_2.error; }
+        }
+        console.log("response from the llm in the /chat endpoint >> : ", response);
+        res.json({
+            "message": "LLM response generated successfully and sent to the frontend!!",
+            response: response
+        });
+    }
+    catch (error) {
+        console.error("there was an error while sending the messages to the LLM in the /chat endpoint!!");
+        res.status(500).json({
+            message: "Internal Server Error in /chat"
+        });
+    }
+}));
 const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`server is running on port : ${PORT}`);

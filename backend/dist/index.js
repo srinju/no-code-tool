@@ -75,50 +75,8 @@ app.post('/template', (req, res) => __awaiter(void 0, void 0, void 0, function* 
         });
     }
 }));
-function main() {
-    return __awaiter(this, void 0, void 0, function* () {
-        var _a, e_1, _b, _c;
-        var _d, _e;
-        const message = yield openai.chat.completions.create({
-            model: "gpt-4o",
-            store: true,
-            stream: true,
-            messages: [{
-                    "role": "system",
-                    "content": (0, prompts_1.getSystemPrompt)()
-                }, {
-                    "role": "user",
-                    "content": "create a node backend for a todo app"
-                }, {
-                    role: "user",
-                    "content": prompts_1.BASE_PROMPT //FOR ALL DESIGNS WALA LINE
-                }, {
-                    //running commands for specific frameworks should be there>
-                    "role": "user",
-                    "content": "<bolt_running_commands>\n</bolt_running_commands>\n\nCurrent Message:\n\ncreate a node backend for a todo app\n\nFile Changes:\n\nHere is a list of all files that have been modified since the start of the conversation.\nThis information serves as the true contents of these files!\n\nThe contents include either the full file contents or a diff (when changes are smaller and localized).\n\nUse it to:\n - Understand the latest file modifications\n - Ensure your suggestions build upon the most recent version of the files\n - Make informed decisions about changes\n - Ensure suggestions are compatible with existing code\n\nvite.config.ts:\n```\n\n```\n\nHere is a list of files that exist on the file system but are not being shown to you:\n\n  - /home/project/.bolt/config.json"
-                },],
-        });
-        try {
-            for (var _f = true, message_1 = __asyncValues(message), message_1_1; message_1_1 = yield message_1.next(), _a = message_1_1.done, !_a; _f = true) {
-                _c = message_1_1.value;
-                _f = false;
-                const chunk = _c;
-                process.stdout.write(((_e = (_d = chunk.choices[0]) === null || _d === void 0 ? void 0 : _d.delta) === null || _e === void 0 ? void 0 : _e.content) || "");
-            }
-        }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (!_f && !_a && (_b = message_1.return)) yield _b.call(message_1);
-            }
-            finally { if (e_1) throw e_1.error; }
-        }
-        console.log(message);
-    });
-}
-//main();
 app.post('/chat', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, e_2, _b, _c;
+    var _a, e_1, _b, _c;
     var _d, _e;
     try {
         //when the user instructs the LLM that make a todo node backend then it hits /template then it generates the prompts to send the llm and we make the request with that prompts only
@@ -140,12 +98,12 @@ app.post('/chat', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 process.stdout.write(((_e = (_d = chunk.choices[0]) === null || _d === void 0 ? void 0 : _d.delta) === null || _e === void 0 ? void 0 : _e.content) || "");
             }
         }
-        catch (e_2_1) { e_2 = { error: e_2_1 }; }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
         finally {
             try {
                 if (!_f && !_a && (_b = response_1.return)) yield _b.call(response_1);
             }
-            finally { if (e_2) throw e_2.error; }
+            finally { if (e_1) throw e_1.error; }
         }
         console.log("response from the llm in the /chat endpoint >> : ", response);
         res.json({

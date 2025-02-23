@@ -1,22 +1,16 @@
-import React, { useState } from 'react';
-import { LandingPage } from './pages/LandingPage';
-import { BuilderInterface } from './pages/BuilderInterface';
+import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import LandingPage from './components/LandingPage';
+import BuilderPage from './components/BuilderPage';
 
 function App() {
-  const [isBuilding, setIsBuilding] = useState(false);
-
-  const handlePromptSubmit = (prompt: string) => {
-    setIsBuilding(true);
-  };
-
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100">
-      {!isBuilding ? (
-        <LandingPage onSubmit={handlePromptSubmit} />
-      ) : (
-        <BuilderInterface />
-      )}
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/builder" element={<BuilderPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

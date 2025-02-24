@@ -132,11 +132,14 @@ export default function App() {
 
           //get the prompts >
           const {prompts , uiPrompts} = response.data;
-          console.log("ui prompts :-------------------" , uiPrompts);
+          //console.log("ui prompts :-------------------" , uiPrompts);
 
-          console.log('PARSED UI PROMPTS : -----------------------' , parseXml(uiPrompts));
+          //console.log('PARSED UI PROMPTS : -----------------------' , parseXml(uiPrompts));
 
-          setSteps(parseXml(uiPrompts));
+          setSteps(parseXml(uiPrompts).map((x : Step) => ({
+            ...x,
+            status : "pending"
+          })));
 
           //send another request to /chat with the prompts and the userPrompt
 
@@ -157,6 +160,8 @@ export default function App() {
     }
     init();
   },[]);
+
+  //after getting the steps we would want to create those files in it and the code in it too 
 
   const [selectedFile, setSelectedFile] = useState<FileItem | null>(null);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['src']));

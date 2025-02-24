@@ -25,8 +25,10 @@ const prompts_1 = require("./prompts");
 const express_1 = __importDefault(require("express"));
 const node_1 = require("./defaults/node");
 const react_1 = require("./defaults/react");
+const cors_1 = __importDefault(require("cors"));
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
+app.use((0, cors_1.default)());
 const openai = new openai_1.default({
     apiKey: process.env.OPEN_AI_API_KEY,
 });
@@ -52,15 +54,15 @@ app.post('/template', (req, res) => __awaiter(void 0, void 0, void 0, function* 
         console.log("response from the ai is : ", answer);
         if (answer === 'node') {
             res.json({
-                prompts: [node_1.basePrompt],
-                uiPrompts: node_1.nodeUiPrompt
+                prompts: [`Here is an artifact that contains all files of the project visible to you.\nConsider the contents of ALL files in the project.\n\n${node_1.basePrompt}\n\nHere is a list of files that exist on the file system but are not being shown to you:\n\n  - .gitignore\n  - package-lock.json\n`],
+                uiPrompts: node_1.basePrompt
             });
             return;
         }
         if (answer === 'react') {
             res.json({
-                prompts: [prompts_1.BASE_PROMPT, react_1.basePrompt],
-                uiPrompts: react_1.uiPromtReact
+                prompts: [prompts_1.BASE_PROMPT, `Here is an artifact that contains all files of the project visible to you.\nConsider the contents of ALL files in the project.\n\n${react_1.basePrompt}\n\nHere is a list of files that exist on the file system but are not being shown to you:\n\n  - .gitignore\n  - package-lock.json\n`],
+                uiPrompts: react_1.basePrompt
             });
             return;
         }

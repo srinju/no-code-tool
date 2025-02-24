@@ -1,11 +1,9 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import LandingPage from './components/LandingPage';
-import BuilderPage from './components/BuilderPage';
-import { parseXml } from './steps';
+import LandingPage from './pages/LandingPage';
+import BuilderPage from './pages/BuilderPage';
 
 function App() {
-
   return (
     <BrowserRouter>
       <Routes>

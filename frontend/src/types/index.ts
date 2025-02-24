@@ -1,27 +1,26 @@
 
 export enum StepType {
-  CreateFile,
-  CreateFolder,
-  EditFile,
-  DeleteFile,
-  RunScript
+    CreateFile,
+    CreateFolder,
+    EditFile,
+    DeleteFile,
+    RunScript
 }
 
 export interface Step {
-  id: number;
-  title: string;
-  type : StepType;
-  status: 'completed' | 'pending' | 'current';
-  description: string;
-  code? : string;
-  path?: string
+    id : number,
+    type : StepType,
+    code? : string,
+    path? : string
+    title: string;
+    status: 'completed' | 'current' | 'pending';
+    description: string;
 }
 
-export interface File {
-  id: string;
+export interface FileItem {
   name: string;
   type: 'file' | 'folder';
+  children?: FileItem[];
   content?: string;
-  children?: File[];
-  isOpen?: boolean;
+  language?: string;
 }

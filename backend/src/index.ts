@@ -4,12 +4,15 @@ require("dotenv").config();
 import OpenAI from 'openai';
 import { BASE_PROMPT, getSystemPrompt } from './prompts';
 import express from 'express';
-import { basePrompt as basePromptNode, nodeUiPrompt } from './defaults/node';
-import { basePrompt as basePromptReact, uiPromtReact } from './defaults/react';
+import { basePrompt as basePromptNode} from './defaults/node';
+import { basePrompt as basePromptReact } from './defaults/react';
+import cors from 'cors';
+
 
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 const openai = new OpenAI({
     apiKey: process.env.OPEN_AI_API_KEY,
@@ -46,16 +49,16 @@ app.post('/template' , async (req , res) => {
 
         if(answer === 'node'){
             res.json({
-                prompts : [basePromptNode ],
-                uiPrompts : nodeUiPrompt
+                prompts : [`Here is an artifact that contains all files of the project visible to you.\nConsider the contents of ALL files in the project.\n\n${basePromptNode}\n\nHere is a list of files that exist on the file system but are not being shown to you:\n\n  - .gitignore\n  - package-lock.json\n` ],
+                uiPrompts : basePromptNode
             });
             return;
         }
 
         if(answer === 'react'){
             res.json({
-                prompts : [BASE_PROMPT , basePromptReact],
-                uiPrompts : uiPromtReact
+                prompts : [BASE_PROMPT , `Here is an artifact that contains all files of the project visible to you.\nConsider the contents of ALL files in the project.\n\n${basePromptReact}\n\nHere is a list of files that exist on the file system but are not being shown to you:\n\n  - .gitignore\n  - package-lock.json\n`],
+                uiPrompts : basePromptReact
             });
             return;
         }

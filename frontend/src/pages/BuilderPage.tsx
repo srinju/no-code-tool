@@ -132,8 +132,11 @@ export default function App() {
 
           //get the prompts >
           const {prompts , uiPrompts} = response.data;
+          console.log("ui prompts :-------------------" , uiPrompts);
 
-          setSteps(parseXml(uiPrompts[0]));
+          console.log('PARSED UI PROMPTS : -----------------------' , parseXml(uiPrompts));
+
+          setSteps(parseXml(uiPrompts));
 
           //send another request to /chat with the prompts and the userPrompt
 

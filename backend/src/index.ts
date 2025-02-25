@@ -92,15 +92,19 @@ app.post('/chat' , async (req,res) => {
             }, ...messages]
         });
 
+        let fullResponse = '';
+
         for await (const chunk of response) {
-            process.stdout.write(chunk.choices[0]?.delta?.content || "")
+            let content = (chunk.choices[0]?.delta?.content || "");
+            process.stdout.write(content);
+            fullResponse += content;
         }
 
-        console.log("response from the llm in the /chat endpoint >> : " , response);
+        console.log("response from the llm in the /chat endpoint >> : " , fullResponse);
 
         res.json({
             "message" : "LLM response generated successfully and sent to the frontend!!",
-            response : response
+            response : fullResponse
         });
 
     } catch (error) {

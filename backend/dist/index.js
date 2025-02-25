@@ -92,12 +92,15 @@ app.post('/chat', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                     "content": (0, prompts_1.getSystemPrompt)()
                 }, ...messages]
         });
+        let fullResponse = '';
         try {
             for (var _f = true, response_1 = __asyncValues(response), response_1_1; response_1_1 = yield response_1.next(), _a = response_1_1.done, !_a; _f = true) {
                 _c = response_1_1.value;
                 _f = false;
                 const chunk = _c;
-                process.stdout.write(((_e = (_d = chunk.choices[0]) === null || _d === void 0 ? void 0 : _d.delta) === null || _e === void 0 ? void 0 : _e.content) || "");
+                let content = (((_e = (_d = chunk.choices[0]) === null || _d === void 0 ? void 0 : _d.delta) === null || _e === void 0 ? void 0 : _e.content) || "");
+                process.stdout.write(content);
+                fullResponse += content;
             }
         }
         catch (e_1_1) { e_1 = { error: e_1_1 }; }
@@ -107,10 +110,10 @@ app.post('/chat', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             }
             finally { if (e_1) throw e_1.error; }
         }
-        console.log("response from the llm in the /chat endpoint >> : ", response);
+        console.log("response from the llm in the /chat endpoint >> : ", fullResponse);
         res.json({
             "message": "LLM response generated successfully and sent to the frontend!!",
-            response: response
+            response: fullResponse
         });
     }
     catch (error) {

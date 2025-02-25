@@ -81,23 +81,27 @@ export default function BuilderPage() {
   */
 
   useEffect(() => {
-    let originalFiles = [...files];
-    let updateHappened = false;
-  
+    
+    let originalFiles = [...files]; //clone files without affecting the original files
+    let updateHappened = false; //setting a false flag for updates made
+    //looping through each pending steps and make them updatehappened true and do the needful
     steps.filter(({ status }) => status === 'pending').forEach(step => {
       updateHappened = true;
+      //check if the step is a file creation step and the file has a path
       if (step.type === StepType.CreateFile && step.path) {
-        let parsedPath = step.path.split("/");
+        let parsedPath = step.path.split("/"); //parsing file path
         let currentFileStructure = [...originalFiles];
         let finalAnswerRef = currentFileStructure;
   
         let currentFolder = "";
+        //loop until all path segments are completed
         while (parsedPath.length) {
-          currentFolder = `${currentFolder}/${parsedPath[0]}`;
-          let currentFolderName = parsedPath[0];
-          parsedPath = parsedPath.slice(1);
+          currentFolder = `${currentFolder}/${parsedPath[0]}`; //build the currnet folder and path one at a time
+          let currentFolderName = parsedPath[0]; //save the current folder name
+          parsedPath = parsedPath.slice(1); //remove the processed segment from the path array
   
           if (!parsedPath.length) {
+            //this means we are at the last segnemtnt (actual files)
             let file = currentFileStructure.find(x => x.path === currentFolder);
             if (!file) {
               currentFileStructure.push({
@@ -110,6 +114,7 @@ export default function BuilderPage() {
               file.content = step.code || '';
             }
           } else {
+            //folder creation logic >
             let folder = currentFileStructure.find(x => x.path === currentFolder);
             if (!folder) {
               currentFileStructure.push({

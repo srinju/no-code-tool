@@ -15,7 +15,7 @@ export interface Step {
     title: string;
     status: 'completed' | 'current' | 'pending';
     description: string;
-}
+} 
 
 export interface FileItem {
   name: string;

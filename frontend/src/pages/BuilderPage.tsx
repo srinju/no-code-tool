@@ -39,7 +39,7 @@ export default function BuilderPage() {
 
           setSteps(parseXml(uiPrompts).map((x : Step) => ({
             ...x,
-            status : "pending"
+            status : "pending" as "pending"
           })));
 
           //send another request to /chat with the prompts and the userPrompt
@@ -52,6 +52,12 @@ export default function BuilderPage() {
           });
 
           console.log("response from the chaat endpoint : " , anotherResponse);
+
+          //update the steps when the code with the new shit comes it will update the build files 
+          setSteps(s => [...s , ...parseXml(anotherResponse.data.response).map(x => ({
+            ...x,
+            status : "pending" as "pending"
+          }))]);
 
         } catch (error) {
 

@@ -85,13 +85,14 @@ app.post('/chat' , async (req,res) => {
         const response = await openai.chat.completions.create({
             model: "gpt-4o",
             store: true,
-            stream : true,
+            //stream : true,
             messages: [{
                 "role" : "system",
                 "content" : getSystemPrompt()
             }, ...messages]
         });
 
+        /*
         let fullResponse = '';
 
         for await (const chunk of response) {
@@ -99,12 +100,13 @@ app.post('/chat' , async (req,res) => {
             process.stdout.write(content);
             fullResponse += content;
         }
+        */
 
-        console.log("response from the llm in the /chat endpoint >> : " , fullResponse);
+        console.log("response from the llm in the /chat endpoint >> : " , response.choices[0].message.content);
 
         res.json({
             "message" : "LLM response generated successfully and sent to the frontend!!",
-            response : fullResponse
+            response : response.choices[0].message.content
         });
 
     } catch (error) {

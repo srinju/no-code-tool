@@ -8,13 +8,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __asyncValues = (this && this.__asyncValues) || function (o) {
-    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
-    var m = o[Symbol.asyncIterator], i;
-    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
-    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
-    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -78,42 +71,31 @@ app.post('/template', (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 }));
 app.post('/chat', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, e_1, _b, _c;
-    var _d, _e;
     try {
         //when the user instructs the LLM that make a todo node backend then it hits /template then it generates the prompts to send the llm and we make the request with that prompts only
         const messages = req.body.messages;
         const response = yield openai.chat.completions.create({
             model: "gpt-4o",
             store: true,
-            stream: true,
+            //stream : true,
             messages: [{
                     "role": "system",
                     "content": (0, prompts_1.getSystemPrompt)()
                 }, ...messages]
         });
+        /*
         let fullResponse = '';
-        try {
-            for (var _f = true, response_1 = __asyncValues(response), response_1_1; response_1_1 = yield response_1.next(), _a = response_1_1.done, !_a; _f = true) {
-                _c = response_1_1.value;
-                _f = false;
-                const chunk = _c;
-                let content = (((_e = (_d = chunk.choices[0]) === null || _d === void 0 ? void 0 : _d.delta) === null || _e === void 0 ? void 0 : _e.content) || "");
-                process.stdout.write(content);
-                fullResponse += content;
-            }
+
+        for await (const chunk of response) {
+            let content = (chunk.choices[0]?.delta?.content || "");
+            process.stdout.write(content);
+            fullResponse += content;
         }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (!_f && !_a && (_b = response_1.return)) yield _b.call(response_1);
-            }
-            finally { if (e_1) throw e_1.error; }
-        }
-        console.log("response from the llm in the /chat endpoint >> : ", fullResponse);
+        */
+        console.log("response from the llm in the /chat endpoint >> : ", response.choices[0].message.content);
         res.json({
             "message": "LLM response generated successfully and sent to the frontend!!",
-            response: fullResponse
+            response: response.choices[0].message.content
         });
     }
     catch (error) {

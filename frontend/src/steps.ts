@@ -29,6 +29,13 @@ import { Step, StepType } from './types';
  * The input can have strings in the middle they need to be ignored
  */
 export function parseXml(response: string): Step[] {
+
+    if(!response || typeof response !== 'string'){
+      console.log(`invalide xml response ` , response);
+      return[];
+    }
+
+    console.log("response in the parseXML function : ----------------------------" , response);
     // Extract the XML content between <boltArtifact> tags
     const xmlMatch = response.match(/<boltArtifact[^>]*>([\s\S]*?)<\/boltArtifact>/);
     

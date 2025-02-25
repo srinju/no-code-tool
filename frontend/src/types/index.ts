@@ -4,7 +4,7 @@ export enum StepType {
     CreateFolder,
     EditFile,
     DeleteFile,
-    RunScript
+    RunScript 
 }
 
 export interface Step {
@@ -23,4 +23,5 @@ export interface FileItem {
   children?: FileItem[];
   content?: string;
   language?: string;
+  path : string
 }

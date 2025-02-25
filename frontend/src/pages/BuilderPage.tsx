@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { FileCode, Folder, ChevronDown, ChevronRight, Terminal, Eye } from 'lucide-react';
 import Editor from "@monaco-editor/react";
-import { FileItem, Step } from '../types';
+import { FileItem, Step, StepType } from '../types';
 import axios from 'axios';
 import { BACKEND_URL } from '../config';
 import { parseXml } from '../steps';
@@ -13,109 +13,10 @@ export default function BuilderPage() {
 
   const [steps,setSteps] = useState<Step[]>([]);
 
-  const [fileStructure] = useState<FileItem[]>([
-    {
-      name: 'src',
-      type: 'folder',
-      children: [
-        {
-          name: 'components',
-          type: 'folder',
-          children: [
-            {
-              name: 'Header.tsx',
-              type: 'file',
-              language: 'typescript',
-              content: `import React from 'react';
+  const[files , setFiles] = useState<FileItem[]>([]);
 
-export default function Header() {
-  return (
-    <header className="bg-white shadow">
-      <nav className="container mx-auto px-4 py-6">
-        <h1>Your Website</h1>
-      </nav>
-    </header>
-  );
-}`
-            },
-            {
-              name: 'Footer.tsx',
-              type: 'file',
-              language: 'typescript',
-              content: `import React from 'react';
-
-export default function Footer() {
-  return (
-    <footer className="bg-gray-800 text-white">
-      <div className="container mx-auto px-4 py-8">
-        <p>&copy; 2024 Your Website</p>
-      </div>
-    </footer>
-  );
-}`
-            }
-          ]
-        },
-        {
-          name: 'pages',
-          type: 'folder',
-          children: [
-            {
-              name: 'Home.tsx',
-              type: 'file',
-              language: 'typescript',
-              content: `import React from 'react';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
-
-export default function Home() {
-  return (
-    <div className="min-h-screen">
-      <Header />
-      <main className="container mx-auto px-4 py-8">
-        <h1>Welcome to Your Website</h1>
-      </main>
-      <Footer />
-    </div>
-  );
-}`
-            }
-          ]
-        },
-        {
-          name: 'styles',
-          type: 'folder',
-          children: [
-            {
-              name: 'globals.css',
-              type: 'file',
-              language: 'css',
-              content: `@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-body {
-  @apply bg-gray-50;
-}`
-            }
-          ]
-        },
-        {
-          name: 'App.tsx',
-          type: 'file',
-          language: 'typescript',
-          content: `import React from 'react';
-import Home from './pages/Home';
-
-export default function App() {
-  return <Home />;
-}`
-        }
-      ]
-    }
-  ]);
-
-
+  const [fileStructure] = useState<FileItem[]>([]);
+    
   useEffect(() => {
     const init = async() => {
 
@@ -161,7 +62,81 @@ export default function App() {
     init();
   },[]);
 
-  //after getting the steps we would want to create those files in it and the code in it too 
+  //from /template we get the uiPrompts from there we parse the steps 
+  //now we want to make the initial files 
+
+  //trigger the useffect when the file comes and the steps are there
+
+  //the steps state looks like this >
+
+  /*
+  
+  code : "<!doctype html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <link rel=\"icon\" type=\"image/svg+xml\" href=\"/vite.svg\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n    <title>Vite + React + TS</title>\n  </head>\n  <body>\n    <div id=\"root\"></div>\n    <script type=\"module\" src=\"/src/main.tsx\"></script>\n  </body>\n</html>"
+  description :  ""
+  id : 3 
+  path : "index.html"
+  status : "pending"
+  title : "Create index.html"
+
+  */
+
+  useEffect(() => {
+    let originalFiles = [...files];
+    let updateHappened = false;
+  
+    steps.filter(({ status }) => status === 'pending').forEach(step => {
+      updateHappened = true;
+      if (step.type === StepType.CreateFile && step.path) {
+        let parsedPath = step.path.split("/");
+        let currentFileStructure = [...originalFiles];
+        let finalAnswerRef = currentFileStructure;
+  
+        let currentFolder = "";
+        while (parsedPath.length) {
+          currentFolder = `${currentFolder}/${parsedPath[0]}`;
+          let currentFolderName = parsedPath[0];
+          parsedPath = parsedPath.slice(1);
+  
+          if (!parsedPath.length) {
+            let file = currentFileStructure.find(x => x.path === currentFolder);
+            if (!file) {
+              currentFileStructure.push({
+                name: currentFolderName,
+                type: 'file',
+                path: currentFolder,
+                content: step.code || ''
+              });
+            } else {
+              file.content = step.code || '';
+            }
+          } else {
+            let folder = currentFileStructure.find(x => x.path === currentFolder);
+            if (!folder) {
+              currentFileStructure.push({
+                name: currentFolderName,
+                type: 'folder',
+                path: currentFolder,
+                children: []
+              });
+            }
+  
+            currentFileStructure = currentFileStructure.find(x => x.path === currentFolder)?.children || [];
+          }
+        }
+        originalFiles = finalAnswerRef;
+      }
+    });
+  
+    if (updateHappened) {
+      setFiles(originalFiles);
+      setSteps(steps => steps.map((s: Step) => ({
+        ...s,
+        status: "completed"
+      })));
+    }
+
+    console.log("files --------------------------------- " , files);
+  }, [steps, files]);
 
   const [selectedFile, setSelectedFile] = useState<FileItem | null>(null);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['src']));
@@ -180,10 +155,21 @@ export default function App() {
   console.log("steps -----------------------------------------------------------", steps);
 
   const renderFileTree = (items: FileItem[], path = '') => {
-    return items.map((item) => {
+    // Sort items: folders first, then files, both alphabetically
+    const sortedItems = [...items].sort((a, b) => {
+      // If types are different, folders come first
+      if (a.type !== b.type) {
+        return a.type === 'folder' ? -1 : 1;
+      }
+      // If types are the same, sort alphabetically
+      return a.name.localeCompare(b.name);
+    });
+  
+    return sortedItems.map((item) => {
+      // Rest of your rendering code remains the same
       const currentPath = path ? `${path}/${item.name}` : item.name;
       const isExpanded = expandedFolders.has(currentPath);
-
+  
       if (item.type === 'folder') {
         return (
           <div key={currentPath}>
@@ -203,7 +189,7 @@ export default function App() {
           </div>
         );
       }
-
+  
       return (
         <button
           key={currentPath}
@@ -275,7 +261,7 @@ export default function App() {
         <div className="flex-1 flex">
           {/* File Explorer */}
           <div className="w-64 bg-gray-800 border-r border-gray-700 p-4 overflow-y-auto">
-            {renderFileTree(fileStructure)}
+            {renderFileTree(files)}
           </div>
 
           {/* Code Preview */}

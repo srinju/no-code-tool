@@ -7,6 +7,7 @@ import axios from 'axios';
 import { BACKEND_URL } from '../config';
 import { parseXml } from '../steps';
 import { useWebContainer } from '../hooks/useWebContainer';
+import { FileNode } from '@webcontainer/api';
 
 export default function BuilderPage() {
   const location = useLocation();
@@ -97,6 +98,8 @@ export default function BuilderPage() {
         return 'javascript';
       case 'ts':
         return 'typescript';
+      case 'tsx' : 
+        return 'react';
       case 'html':
         return 'html';
       case 'css':
@@ -142,6 +145,16 @@ export default function BuilderPage() {
             } else {
               file.content = step.code || '';
             }
+            
+            //mount the files in the webcontainer >>
+            webContainer?.mount(({
+              [currentFolder] : {
+                file : {
+                  contents : step.code
+                }
+              } as FileNode
+              
+            }));
           } else {
             //folder creation logic >
             let folder = currentFileStructure.find(x => x.path === currentFolder);
@@ -171,6 +184,62 @@ export default function BuilderPage() {
 
     console.log("files --------------------------------- " , files);
   }, [steps, files]);
+
+
+  //for mounting the files and folders in the web container >>
+
+
+  useEffect(() => {
+
+    const createMountStructure = (files: FileItem[]): Record<string, any> => {
+      const mountStructure: Record<string, any> = {};
+  
+      const processFile = (file: FileItem, isRootFolder: boolean) => {  
+        if (file.type === 'folder') {
+          // For folders, create a directory entry
+          mountStructure[file.name] = {
+            directory: file.children ? 
+              Object.fromEntries(
+                file.children.map(child => [child.name, processFile(child, false)])
+              ) 
+              : {}
+          };
+        } else if (file.type === 'file') {
+          if (isRootFolder) {
+            mountStructure[file.name] = {
+              file: {
+                contents: file.content || ''
+              }
+            };
+          } else {
+            // For files, create a file entry with contents
+            return {
+              file: {
+                contents: file.content || ''
+              }
+            };
+          }
+        }
+  
+        return mountStructure[file.name];
+      };
+  
+      // Process each top-level file/folder
+      files.forEach(file => processFile(file, true));
+  
+      return mountStructure;
+    };
+  
+    const mountStructure = createMountStructure(files);
+  
+    // Mount the structure if WebContainer is available
+    console.log(mountStructure);
+    webContainer?.mount(mountStructure);
+
+  }, [files, webContainer]);
+
+
+
 
   const [selectedFile, setSelectedFile] = useState<FileItem | null>(null);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['src']));

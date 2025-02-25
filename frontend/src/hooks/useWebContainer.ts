@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { WebContainer } from '@webcontainer/api';
 
-export function useWebContainer() {
+export function useWebContainer() : WebContainer | undefined {
 
     //hook to save the webcontainer instance
 
-    const [webcontainer , setWebContainer] = useState<WebContainer>();
+    const [webcontainer , setWebContainer] = useState<WebContainer | undefined>();
 
     useEffect(() => {
 
@@ -18,4 +18,6 @@ export function useWebContainer() {
 
         containerFunc();
     },[]);
+
+    return webcontainer;
 }

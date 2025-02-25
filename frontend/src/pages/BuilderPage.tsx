@@ -86,6 +86,25 @@ export default function BuilderPage() {
 
   */
 
+
+  const getLanguageFromPath = (path: string): string => {
+    const extension = path.split('.').pop()?.toLowerCase();
+    switch (extension) {
+      case 'js':
+        return 'javascript';
+      case 'ts':
+        return 'typescript';
+      case 'html':
+        return 'html';
+      case 'css':
+        return 'css';
+      case 'json':
+        return 'json';
+      default:
+        return 'plaintext'; // Fallback for unknown file types
+    }
+  };
+
   useEffect(() => {
     
     let originalFiles = [...files]; //clone files without affecting the original files
@@ -114,7 +133,8 @@ export default function BuilderPage() {
                 name: currentFolderName,
                 type: 'file',
                 path: currentFolder,
-                content: step.code || ''
+                content: step.code || '',
+                language : getLanguageFromPath(currentFolderName)
               });
             } else {
               file.content = step.code || '';

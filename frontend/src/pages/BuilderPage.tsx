@@ -6,6 +6,7 @@ import { FileItem, Step, StepType } from '../types';
 import axios from 'axios';
 import { BACKEND_URL } from '../config';
 import { parseXml } from '../steps';
+import { useWebContainer } from '../hooks/useWebContainer';
 
 export default function BuilderPage() {
   const location = useLocation();
@@ -16,6 +17,8 @@ export default function BuilderPage() {
   const[files , setFiles] = useState<FileItem[]>([]);
 
   const [fileStructure] = useState<FileItem[]>([]);
+
+  const webContainer = useWebContainer(); //boots the webcontainer and save the instance of the webContainer
     
   useEffect(() => {
     const init = async() => {

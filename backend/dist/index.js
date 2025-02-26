@@ -105,7 +105,7 @@ app.post('/chat', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         });
     }
 }));
-const PORT = 3000;
+const PORT = 8080;
 app.listen(PORT, () => {
     console.log(`server is running on port : ${PORT}`);
 });

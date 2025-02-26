@@ -13,11 +13,7 @@ import cors from 'cors';
 const app = express();
 app.use(express.json());
 
-app.use(cors({
-    origin: 'https://builtitai.vercel.app/', 
-    methods: ['GET', 'POST'], 
-    credentials: true 
-}));
+app.use(cors());
 
 const openai = new OpenAI({
     apiKey: process.env.OPEN_AI_API_KEY,
@@ -123,7 +119,7 @@ app.post('/chat' , async (req,res) => {
 });
 
 
-const PORT = 8080;
+const PORT = 3000;
 app.listen(PORT , () => {
     console.log(`server is running on port : ${PORT}`);
 })

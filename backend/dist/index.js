@@ -21,11 +21,7 @@ const react_1 = require("./defaults/react");
 const cors_1 = __importDefault(require("cors"));
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
-app.use((0, cors_1.default)({
-    origin: 'https://builtitai.vercel.app/',
-    methods: ['GET', 'POST'],
-    credentials: true
-}));
+app.use((0, cors_1.default)());
 const openai = new openai_1.default({
     apiKey: process.env.OPEN_AI_API_KEY,
 });
@@ -109,7 +105,7 @@ app.post('/chat', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         });
     }
 }));
-const PORT = 8080;
+const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`server is running on port : ${PORT}`);
 });

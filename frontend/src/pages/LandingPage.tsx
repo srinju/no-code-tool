@@ -25,7 +25,7 @@ export default function LandingPage() {
             Build Your Website with AI
           </h1>
           <p className="text-xl text-gray-300 mb-12 animate-slide-up">
-            Transform your ideas into a stunning website in minutes with our cutting-edge AI technology
+            Transform your ideas into a stunning website in minutes
           </p>
 
           <form onSubmit={handleSubmit} className="max-w-2xl mx-auto mb-16">

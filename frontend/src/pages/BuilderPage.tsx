@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { FileCode, Folder, ChevronDown, ChevronRight, Terminal, Eye } from 'lucide-react';
+import { FileCode, Folder, ChevronDown, ChevronRight, Terminal, Eye, Loader2 } from 'lucide-react';
 import Editor from "@monaco-editor/react";
 import { FileItem, Step, StepType } from '../types';
 import axios from 'axios';
@@ -23,6 +23,10 @@ export default function BuilderPage() {
   const webContainer = useWebContainer(); //boots the webcontainer and save the instance of the webContainer
 
   const [followUpPrompt , setFollowUpPrompt] = useState("");
+  const [isLodading , setIsLoading] = useState(false);
+
+  //state for storing the llm messages >
+  const [llmMessages , setllmMessages] = useState<{role : "user" | "assistant" , content : string}[]>([]);
     
   useEffect(() => {
     const init = async() => {
@@ -66,6 +70,14 @@ export default function BuilderPage() {
             status : "pending" as "pending"
           }))]);
 
+
+          setllmMessages([...prompts , prompt].map(content => ({
+            role : "user",
+            content : content
+        })));
+
+          setllmMessages(x => [...x, {role: "assistant", content: anotherResponse.data.response}])
+
         } catch (error) {
 
           console.error("there was an error sending the request to the backend! " , error);
@@ -74,6 +86,44 @@ export default function BuilderPage() {
     }
     init();
   },[]);
+
+
+  const handleFollowUpPrompt = async() => {
+
+    setIsLoading(true);
+    try {
+
+      const newMessage = {
+          role : "user" as "user",
+          content : followUpPrompt
+      }
+      
+      const response = await axios.post(`${BACKEND_URL}/chat` , {
+        messages : [...llmMessages , newMessage]
+      });
+      
+      console.log("respons from the follow up prompt : -------------------------", response);
+
+      setllmMessages(x => [...x , newMessage]);
+
+      setllmMessages(x => [...x , {
+        role : "assistant",
+        content : response.data.response
+      }])
+
+      setSteps(s => [...s , ...parseXml(response.data.response).map(x => ({
+        ...x,
+        status : "pending" as "pending"
+      }))]);
+
+      setFollowUpPrompt("");
+
+    } catch (error) {
+        console.error("an error occured while sending the follow up prompt to the backend!!" , error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   //from /template we get the uiPrompts from there we parse the steps 
   //now we want to make the initial files 
@@ -102,7 +152,9 @@ export default function BuilderPage() {
       case 'ts':
         return 'typescript';
       case 'tsx' : 
-        return 'react';
+        return 'typescript';
+      case 'jsx':
+        return 'javascript';
       case 'html':
         return 'html';
       case 'css':
@@ -243,11 +295,6 @@ export default function BuilderPage() {
 
 
 
-  const handleFollowUpPrompt = async() => {
-    
-  }
-
-
   const [selectedFile, setSelectedFile] = useState<FileItem | null>(null);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['src']));
   const [previewMode, setPreviewMode] = useState<'code' | 'preview'>('code');
@@ -316,59 +363,47 @@ export default function BuilderPage() {
   };
 
   return (
-    <div className="h-screen bg-gray-900 text-white flex">
+    <div className="h-screen bg-gray-950 text-white flex font-sans">
       {/* Left Sidebar - Steps */}
-      <div className="w-80 bg-gray-800 p-6 overflow-y-auto">
-        <h2 className="text-xl font-semibold mb-6">Building your website</h2>
+      <div className="w-80 bg-gray-900 p-6 overflow-y-auto border-r border-gray-800 shadow-lg">
+        <h2 className="text-2xl font-semibold mb-6 text-white">Website Build Progress</h2>
         <div className="space-y-6">
           {steps.map((step, index) => (
             <div key={index} className="relative">
-              <div
-                className={`flex items-center gap-4 ${
-                  step.status === 'completed'
-                    ? 'text-green-500'
-                    : step.status === 'current'
-                    ? 'text-blue-500'
-                    : 'text-gray-500'
-                }`}
-              >
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    step.status === 'completed'
-                      ? 'bg-green-500/20 text-green-500'
-                      : step.status === 'current'
-                      ? 'bg-blue-500/20 text-blue-500'
-                      : 'bg-gray-700 text-gray-500'
-                  }`}
-                >
+              <div className={`flex items-center gap-4 ${step.status === 'completed' ? 'text-green-400' : step.status === 'current' ? 'text-blue-400' : 'text-gray-500'}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step.status === 'completed' ? 'bg-green-500/10' : step.status === 'current' ? 'bg-blue-500/10' : 'bg-gray-800'}`}>
                   {index + 1}
                 </div>
                 <div>
-                  <h3 className="font-medium">{step.title}</h3>
-                  <p className="text-sm text-gray-400">{step.description}</p>
+                  <h3 className="font-medium text-white">{step.title}</h3>
+                  <p className="text-sm text-gray-400"></p>
                 </div>
               </div>
-              {index < steps.length - 1 && (
-                <div className="absolute left-4 top-8 w-px h-8 bg-gray-700"></div>
-              )}
+              {index < steps.length - 1 && <div className="absolute left-4 top-8 w-px h-8 bg-gray-800"></div>}
             </div>
           ))}
         </div>
-
         {/* Follow-Up Prompt Section */}
-        <div className="mt-6">
+        <div className="mt-8">
           <textarea
             value={followUpPrompt}
             onChange={(e) => setFollowUpPrompt(e.target.value)}
-            placeholder="Enter a follow-up prompt..."
-            className="w-full p-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Refine your website (e.g., 'Add a contact form')..."
+            className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all duration-200"
             rows={3}
           />
           <button
             onClick={handleFollowUpPrompt}
-            className="mt-2 w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={isLodading}
+            className="mt-3 w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-blue-500/50 transition-all duration-200 flex items-center justify-center gap-2"
           >
-            Submit Follow-Up Prompt
+            {isLodading ? (
+              <>
+                <Loader2 size={20} className="animate-spin" /> Processing
+              </>
+            ) : (
+              'Submit'
+            )}
           </button>
         </div>
       </div>
@@ -376,30 +411,31 @@ export default function BuilderPage() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Top Bar */}
-        <div className="h-12 bg-gray-800 flex items-center px-4 gap-4">
+        <div className="h-14 bg-gray-900 flex items-center px-4 gap-4 border-b border-gray-800">
           <button
             onClick={() => setPreviewMode('code')}
-            className={`px-3 py-1 rounded ${previewMode === 'code' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
+            className={`px-4 py-2 rounded-lg flex items-center gap-2 ${previewMode === 'code' ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-800'}`}
           >
-            <FileCode size={20} />
+            <FileCode size={20} /> Code
           </button>
           <button
             onClick={() => setPreviewMode('preview')}
-            className={`px-3 py-1 rounded ${previewMode === 'preview' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
+            className={`px-4 py-2 rounded-lg flex items-center gap-2 ${previewMode === 'preview' ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-800'}`}
           >
-            <Eye size={20} />
+            <Eye size={20} /> Preview
           </button>
         </div>
 
         {/* Content Area */}
         <div className="flex-1 flex">
           {/* File Explorer */}
-          <div className="w-64 bg-gray-800 border-r border-gray-700 p-4 overflow-y-auto">
-            {renderFileTree(files)}
+          <div className="w-72 bg-gray-900 border-r border-gray-800 p-4 overflow-y-auto shadow-inner">
+            <h3 className="text-lg font-semibold mb-4 text-white">File Explorer</h3>
+            {files.length ? renderFileTree(files) : <p className="text-gray-500">Building files...</p>}
           </div>
 
-          {/* Code Preview */}
-          <div className="flex-1 bg-gray-900">
+          {/* Code/Preview Area */}
+          <div className="flex-1 bg-gray-950">
             {previewMode === 'code' ? (
               selectedFile ? (
                 <Editor
@@ -414,6 +450,7 @@ export default function BuilderPage() {
                     lineNumbers: 'on',
                     scrollBeyondLastLine: false,
                     automaticLayout: true,
+                    padding: { top: 16 },
                   }}
                 />
               ) : (
@@ -427,6 +464,16 @@ export default function BuilderPage() {
           </div>
         </div>
       </div>
+
+      {/* Optional CSS for Fancy Touches */}
+      <style>{`
+        .shadow-inner {
+          box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        button:disabled {
+          cursor: not-allowed;
+        }
+      `}</style>
     </div>
   );
 }

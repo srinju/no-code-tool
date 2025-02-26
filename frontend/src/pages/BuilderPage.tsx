@@ -8,6 +8,7 @@ import { BACKEND_URL } from '../config';
 import { parseXml } from '../steps';
 import { useWebContainer } from '../hooks/useWebContainer';
 import { FileNode } from '@webcontainer/api';
+import { PreviewFrame } from '../components/PreviewFrame';
 
 export default function BuilderPage() {
   const location = useLocation();
@@ -20,6 +21,8 @@ export default function BuilderPage() {
   const [fileStructure] = useState<FileItem[]>([]);
 
   const webContainer = useWebContainer(); //boots the webcontainer and save the instance of the webContainer
+
+  const [followUpPrompt , setFollowUpPrompt] = useState("");
     
   useEffect(() => {
     const init = async() => {
@@ -233,12 +236,16 @@ export default function BuilderPage() {
     const mountStructure = createMountStructure(files);
   
     // Mount the structure if WebContainer is available
-    console.log(mountStructure);
+    console.log("mount structure -------------------------------------" ,mountStructure);
     webContainer?.mount(mountStructure);
 
   }, [files, webContainer]);
 
 
+
+  const handleFollowUpPrompt = async() => {
+    
+  }
 
 
   const [selectedFile, setSelectedFile] = useState<FileItem | null>(null);
@@ -316,17 +323,24 @@ export default function BuilderPage() {
         <div className="space-y-6">
           {steps.map((step, index) => (
             <div key={index} className="relative">
-              <div className={`
-                flex items-center gap-4
-                ${step.status === 'completed' ? 'text-green-500' : 
-                  step.status === 'current' ? 'text-blue-500' : 'text-gray-500'}
-              `}>
-                <div className={`
-                  w-8 h-8 rounded-full flex items-center justify-center
-                  ${step.status === 'completed' ? 'bg-green-500/20 text-green-500' :
-                    step.status === 'current' ? 'bg-blue-500/20 text-blue-500' :
-                    'bg-gray-700 text-gray-500'}
-                `}>
+              <div
+                className={`flex items-center gap-4 ${
+                  step.status === 'completed'
+                    ? 'text-green-500'
+                    : step.status === 'current'
+                    ? 'text-blue-500'
+                    : 'text-gray-500'
+                }`}
+              >
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    step.status === 'completed'
+                      ? 'bg-green-500/20 text-green-500'
+                      : step.status === 'current'
+                      ? 'bg-blue-500/20 text-blue-500'
+                      : 'bg-gray-700 text-gray-500'
+                  }`}
+                >
                   {index + 1}
                 </div>
                 <div>
@@ -339,6 +353,23 @@ export default function BuilderPage() {
               )}
             </div>
           ))}
+        </div>
+
+        {/* Follow-Up Prompt Section */}
+        <div className="mt-6">
+          <textarea
+            value={followUpPrompt}
+            onChange={(e) => setFollowUpPrompt(e.target.value)}
+            placeholder="Enter a follow-up prompt..."
+            className="w-full p-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            rows={3}
+          />
+          <button
+            onClick={handleFollowUpPrompt}
+            className="mt-2 w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            Submit Follow-Up Prompt
+          </button>
         </div>
       </div>
 
@@ -391,9 +422,7 @@ export default function BuilderPage() {
                 </div>
               )
             ) : (
-              <div className="h-full flex items-center justify-center text-gray-400">
-                Preview loading...
-              </div>
+              <PreviewFrame files={files} webContainer={webContainer} />
             )}
           </div>
         </div>

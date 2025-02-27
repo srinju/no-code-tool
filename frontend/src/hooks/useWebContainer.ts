@@ -5,7 +5,7 @@ export function useWebContainer() : WebContainer | undefined {
 
     //hook to save the webcontainer instance
 
-    const [webcontainer , setWebContainer] = useState<WebContainer | undefined>();
+    const [webcontainer , setWebContainer] = useState<WebContainer>();
 
     useEffect(() => {
 

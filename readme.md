@@ -41,3 +41,7 @@
 3. **Website Generation**: The frontend displays the build steps, file structure, and code in real-time.
 4. **Preview & Refine**: View the live site, explore the code, and refine it with follow-up prompts.
 5. **Deploy**: Export or deploy your website with a single click.
+
+#NOTE >
+
+As it is defpenedent on a third party api of openai sometimes it takes time to get the response because of the server load of openai.
